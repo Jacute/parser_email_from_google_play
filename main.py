@@ -4,7 +4,6 @@ from random import randint
 import time
 import os
 import csv
-import sys
 import traceback
 
 
@@ -14,17 +13,12 @@ options = webdriver.ChromeOptions()
 # user-agent
 options.add_argument("user-agent=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0")
 
-# disable webdriver mode
-
-# # for older ChromeDriver under version 79.0.3945.16
-# options.add_experimental_option("excludeSwitches", ["enable-automation"])
-# options.add_experimental_option("useAutomationExtension", False)
-
-# for ChromeDriver version 79.0.3945.16 or over
 options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_argument('headless')
+options.add_argument('window-size=1920x935')
 
 driver = webdriver.Chrome(
-    executable_path=os.path.abspath('chromedriver'),
+    executable_path=os.path.abspath('chromedriver.exe'),
     options=options
 )
 try:
@@ -62,15 +56,19 @@ try:
         except Exception:
             mail = 'Почта не найдена'
         result.append((mail, name, url))
-    result = list(set(result))
-    with open('result.csv', mode='w') as f:
-        writer = csv.writer(f, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    with open('result.csv', mode='w', newline='') as f:
+        writer = csv.writer(
+            f, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(('Почта', 'Название', 'Ссылка'))
         for i in result:
-            writer.writerow(i)
+            try:
+                writer.writerow(i)
+            except Exception:
+                writer.writerow((i[0], '', i[2]))
 except Exception as e:
     print('Произошла ошибка!')
     print('Ошибка:\n', traceback.format_exc())
 finally:
     driver.close()
     driver.quit()
+    print(input('Press ENTER to close this program'))
